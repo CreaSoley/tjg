@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Roue Tai-Jitsu</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <img src="logo-club.png" alt="Logo du club" class="logo">
+  <h1>Roue des Assauts</h1>
+</header>
+
+<section class="controls">
+  <label><input type="checkbox" checked id="soundToggle"> 🔊 Son</label>
+  <label><input type="checkbox" checked id="speechToggle"> 🗣️ Voix</label>
+  <label><input type="checkbox" id="excludeArme"> Exclure Armes</label>
+  <label><input type="checkbox" id="excludeAtemi"> Exclure Atemi</label>
+</section>
+
+<section class="wheel-container">
+  <canvas id="wheel" width="320" height="320"></canvas>
+  <button id="spinBtn">🎯 Tourner la roue</button>
+</section>
+
+<section class="result">
+  <h2>Résultat</h2>
+  <div id="resultText">Appuie sur la roue 👊</div>
+</section>
+
+<audio id="spinSound" src="spin.mp3" preload="auto"></audio>
+
+<script src="app.js"></script>
+</body>
+</html>
