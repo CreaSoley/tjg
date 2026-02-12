@@ -61,44 +61,51 @@ function getFilters() {
 function spin() {
   if (!assauts.length) return;
 
-  // 1️⃣ Tirage de l’assaut
+  // Tirage assaut (gestion objet ou string)
   const assautObj = assauts[Math.floor(Math.random() * assauts.length)];
   const assaut = assautObj.label || assautObj.nom || assautObj.name || assautObj;
 
-  const assautText = `Assaut : ${assaut}`;
+  // On prépare l'affichage sans révéler encore
+  resultBox.innerHTML = `
+    <div id="assautReveal" class="assaut-reveal">
+      Assaut : ${assaut}
+    </div>
+  `;
 
-  resultBox.innerHTML = `<strong>${assautText}</strong>`;
-  if (voiceOn) speak(assautText);
+  // Préparation technique de base
+  const num = Math.ceil(Math.random() * 8);
+  const types = ["Atemi","Clé","Projection"];
+  const type = types[Math.floor(Math.random() * 3)];
+  const tech = techniques[num][type];
 
-  // 2️⃣ Petite pause avant la roue
-  setTimeout(() => {
+  // Préparation son
+  spinSound.currentTime = 0;
 
-    // Tirage technique de base (1 à 8)
-    const num = Math.ceil(Math.random() * 8);
-    const types = ["Atemi","Clé","Projection"];
-    const type = types[Math.floor(Math.random() * 3)];
-    const tech = techniques[num][type];
+  const segmentAngle = 360 / 8;
+  const targetAngle = 360 - (num - 1) * segmentAngle - segmentAngle / 2;
+  const spins = 6 * 360;
+  const finalRotation = spins + targetAngle;
 
-    // Préparation du son
-    spinSound.currentTime = 0;
-
-    // Calcul rotation
-    const segmentAngle = 360 / 8;
-    const targetAngle = 360 - (num - 1) * segmentAngle - segmentAngle / 2;
-    const spins = 6 * 360;
-    const finalRotation = spins + targetAngle;
-
-    wheel.style.transition = "none";
+  // Reset animation pour éviter les bugs
+  wheel.style.transition = "none";
   wheel.style.transform = "rotate(0deg)";
-  wheel.offsetHeight; // 👈 force le navigateur à recalculer
+  wheel.offsetHeight;
 
   wheel.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)";
   wheel.style.transform = `rotate(${finalRotation}deg)`;
 
+  if (soundOn) spinSound.play();
 
-    if (soundOn) spinSound.play();
+  // Après arrêt de la roue
+  setTimeout(() => {
 
-    // 3️⃣ Résultat APRÈS l'arrêt complet
+    // 🎭 Révélation assaut avec animation
+    const reveal = document.getElementById("assautReveal");
+    reveal.classList.add("open");
+
+    if (voiceOn) speak(`Assaut : ${assaut}`);
+
+    // Petite pause dramatique avant la technique
     setTimeout(() => {
       const text = `Technique de base ${num} par ${type} : ${tech}`;
 
@@ -113,9 +120,9 @@ function spin() {
 
       history.push({ assaut, num, type, tech });
 
-    }, 6000);
+    }, 1200);
 
-  }, 1200);
+  }, 6000);
 }
 
 function speak(text) {
