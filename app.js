@@ -21,6 +21,32 @@ const techniques = {
   7: { Atemi: "Chudan kizami tsuki", Clé: "Tembin", Projection: "Ushiro goshi" },
   8: { Atemi: "Yoko fumikomi", Clé: "Hashi mawashi", Projection: "Kata hizaguruma" }
 };
+const phonetics = {
+  "Uraken uchi": "ou-ra-kèn ou-tchi",
+  "Kote gaeshi": "ko-té ga-é-chi",
+  "O soto gari": "o so-to ga-ri",
+  "Mae hiza geri": "ma-é hi-za gué-ri",
+  "Waki gatame": "wa-ki ga-ta-mé",
+  "Taï otoshi": "ta-i o-to-chi",
+  "Yoko empi": "yo-ko èn-pi",
+  "Juji ude gatame": "djou-dji ou-dé ga-ta-mé",
+  "Ippon seoi nage": "ip-pon sé-o-i na-gué",
+  "Chudan mae geri": "tchou-dane ma-é gué-ri",
+  "Yuki shigae": "you-ki chi-ga-é",
+  "Waki otoshi": "wa-ki o-to-chi",
+  "Jodan shuto uchi": "djo-dane chou-to ou-tchi",
+  "Hiji dori ura": "hi-dji do-ri ou-ra",
+  "Uki waza": "ou-ki wa-za",
+  "Chudan mawashi geri": "tchou-dane ma-wa-chi gué-ri",
+  "Shiho nage": "chi-ho na-gué",
+  "Haraï goshi": "ha-ra-ï go-chi",
+  "Chudan kizami tsuki": "tchou-dane ki-za-mi tsou-ki",
+  "Tembin": "tèm-bine",
+  "Ushiro goshi": "ou-chi-ro go-chi",
+  "Yoko fumikomi": "yo-ko fou-mi-ko-mi",
+  "Hashi mawashi": "ha-chi ma-wa-chi",
+  "Kata hizaguruma": "ka-ta hi-za-gou-rou-ma"
+};
 
 fetch("assauts.json")
   .then(r => r.json())
@@ -64,6 +90,7 @@ function spin() {
   // Tirage assaut (gestion objet ou string)
   const assautObj = assauts[Math.floor(Math.random() * assauts.length)];
   const assaut = assautObj.label || assautObj.nom || assautObj.name || assautObj;
+  const phoneticTech = phonetics[tech] || tech;
 
   // On prépare l'affichage sans révéler encore
   resultBox.innerHTML = `
@@ -82,9 +109,15 @@ function spin() {
   spinSound.currentTime = 0;
 
   const segmentAngle = 360 / 8;
-  const targetAngle = 360 - (num - 1) * segmentAngle - segmentAngle / 2;
+const pointerAngle = 270; // 12h en degrés (repère CSS)
+
+const targetAngle =
+  360 * 6 +                      // 6 tours complets
+  pointerAngle -                // position du pointeur
+  (num - 0.5) * segmentAngle;   // centre du segment
+
   const spins = 6 * 360;
-  const finalRotation = spins + targetAngle;
+ const finalRotation = targetAngle;
 
   // Reset animation pour éviter les bugs
   wheel.style.transition = "none";
@@ -132,6 +165,30 @@ function speak(text) {
   u.pitch = 1.05;
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
+}
+function speakSequence(texts, delay = 0) {
+  if (!voiceOn) return;
+
+  let i = 0;
+
+  function next() {
+    if (i >= texts.length) return;
+
+    const u = new SpeechSynthesisUtterance(texts[i]);
+    u.lang = "fr-FR";
+    u.rate = 0.95;
+    u.pitch = 1.05;
+
+    u.onend = () => {
+      setTimeout(next, delay);
+    };
+
+    speechSynthesis.speak(u);
+    i++;
+  }
+
+  speechSynthesis.cancel();
+  next();
 }
 
 spinBtn.addEventListener("click", spin);
