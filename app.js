@@ -90,7 +90,6 @@ function spin() {
   // Tirage assaut (gestion objet ou string)
   const assautObj = assauts[Math.floor(Math.random() * assauts.length)];
   const assaut = assautObj.label || assautObj.nom || assautObj.name || assautObj;
-  const phoneticTech = phonetics[tech] || tech;
 
   // On prépare l'affichage sans révéler encore
   resultBox.innerHTML = `
@@ -104,20 +103,17 @@ function spin() {
   const types = ["Atemi","Clé","Projection"];
   const type = types[Math.floor(Math.random() * 3)];
   const tech = techniques[num][type];
+  const phoneticTech = phonetics[tech] || tech;
 
   // Préparation son
   spinSound.currentTime = 0;
 
   const segmentAngle = 360 / 8;
-const pointerAngle = 270; // 12h en degrés (repère CSS)
-
-const targetAngle =
-  360 * 6 +                      // 6 tours complets
-  pointerAngle -                // position du pointeur
-  (num - 0.5) * segmentAngle;   // centre du segment
-
-  const spins = 6 * 360;
- const finalRotation = targetAngle;
+  const pointerAngle = 270; // 12h en degrés (repère CSS)
+  const targetAngle =
+    360 * 6 +                      // 6 tours complets
+    pointerAngle -                  // position du pointeur
+    (num - 0.5) * segmentAngle;    // centre du segment
 
   // Reset animation pour éviter les bugs
   wheel.style.transition = "none";
@@ -125,7 +121,7 @@ const targetAngle =
   wheel.offsetHeight;
 
   wheel.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)";
-  wheel.style.transform = `rotate(${finalRotation}deg)`;
+  wheel.style.transform = `rotate(${targetAngle}deg)`;
 
   if (soundOn) spinSound.play();
 
@@ -136,27 +132,9 @@ const targetAngle =
     const reveal = document.getElementById("assautReveal");
     reveal.classList.add("open");
 
-    if (voiceOn) speak(`Assaut : ${assaut}`);
-
-    // Petite pause dramatique avant la technique
-    setTimeout(() => {
-      const text = `Technique de base ${num} par ${type} : ${tech}`;
-
-      resultBox.innerHTML += `
-        <hr>
-        <strong>Technique de base ${num}</strong><br>
-        ➜ ${type}<br>
-        ${tech}
-      `;
-
-      if (voiceOn) speak(text);
-
-      history.push({ assaut, num, type, tech });
-
-    }, 1200);
-
-  }, 6000);
-}
+    // Lecture séquence voix
+    if (voiceOn) {
+      speakSe
 
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
