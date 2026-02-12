@@ -62,5 +62,107 @@
   <img src="logo-club.png" class="club-logo" alt="Logo club">
 </div>
 </div>
- 
+ <script>
+const techniques = {
+  1: { Atemi: "Uraken uchi", Clé: "Kote gaeshi", Projection: "O soto gari" },
+  2: { Atemi: "Mae hiza geri", Clé: "Waki gatame", Projection: "Taï otoshi" },
+  3: { Atemi: "Yoko empi", Clé: "Juji ude gatame", Projection: "Ippon seoi nage" },
+  4: { Atemi: "Chudan mae geri", Clé: "Yuki shigae", Projection: "Waki otoshi" },
+  5: { Atemi: "Jodan shuto uchi", Clé: "Hiji dori ura", Projection: "Uki waza" },
+  6: { Atemi: "Chudan mawashi geri", Clé: "Shiho nage", Projection: "Haraï goshi" },
+  7: { Atemi: "Chudan kizami tsuki", Clé: "Tembin", Projection: "Ushiro goshi" },
+  8: { Atemi: "Yoko fumikomi", Clé: "Hashi mawashi", Projection: "Kata hizaguruma" }
+};
+
+let assauts = [];
+let lastResults = [];
+let soundOn = true;
+
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+const spinBtn = document.getElementById("spinBtn");
+const resultBox = document.getElementById("assautResult");
+const soundToggle = document.getElementById("soundToggle");
+
+fetch("assauts.json").then(r => r.json()).then(data => {
+  assauts = data;
+  drawWheel(assauts);
+});
+
+function getFilters() {
+  return [...document.querySelectorAll(".filter:checked")].map(cb => cb.value);
+}
+
+function pickRandom(filtered) {
+  let pick;
+  let tries = 0;
+  do {
+    pick = filtered[Math.floor(Math.random() * filtered.length)];
+    tries++;
+  } while (lastResults.includes(pick.nom) && tries < 10);
+
+  lastResults.push(pick.nom);
+  if (lastResults.length > 5) lastResults.shift(); // mémoire 5 derniers
+  return pick;
+}
+
+function spin() {
+  const filters = getFilters();
+  const filtered = assauts.filter(a => filters.includes(a.type_attaque));
+  if (!filtered.length) {
+    resultBox.textContent = "Aucun assaut disponible 😅";
+    return;
+  }
+
+  const assaut = pickRandom(filtered);
+  const techNum = Math.ceil(Math.random() * 8);
+  const types = ["Atemi", "Clé", "Projection"];
+  const type = types[Math.floor(Math.random() * 3)];
+  const techName = techniques[techNum][type];
+
+  const text = `${assaut.type_attaque} – ${assaut.nom} ➜ Technique ${techNum} / ${type} : ${techName}`;
+  resultBox.innerHTML = `
+    <div>${assaut.type_attaque} – ${assaut.nom}</div>
+    <div>⬇️</div>
+    <div>Technique ${techNum} – ${type}</div>
+    <div>${techName}</div>
+  `;
+
+  if (soundOn) speak(text);
+  animateWheel();
+}
+
+function speak(text) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "fr-FR";
+  speechSynthesis.speak(u);
+}
+
+function animateWheel() {
+  canvas.style.transition = "transform 2s cubic-bezier(.17,.67,.2,1)";
+  canvas.style.transform = `rotate(${720 + Math.random()*360}deg)`;
+  setTimeout(() => canvas.style.transition = "", 2000);
+}
+
+function drawWheel(data) {
+  const colors = ["#ff4d4d","#ff9f1c","#2ec4b6","#6a4c93","#ff006e","#00bbf9"];
+  const slice = (Math.PI * 2) / data.length;
+
+  data.forEach((a, i) => {
+    ctx.beginPath();
+    ctx.moveTo(160,160);
+    ctx.arc(160,160,160,i*slice,(i+1)*slice);
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fill();
+  });
+}
+
+spinBtn.addEventListener("click", spin);
+
+soundToggle.addEventListener("click", () => {
+  soundOn = !soundOn;
+  soundToggle.textContent = soundOn ? "🔊" : "🔇";
+});
+</script>
+
 
