@@ -1,168 +1,52 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Simulateur UV – Examen</title>
-
-<link rel="stylesheet" href="banner.css">
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
-
-<style>
-.grid {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 20px !important;
-  width: 100%;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roue des Assauts – Tai-Jitsu</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap" rel="stylesheet">
 </head>
+<body>
 
-<body data-subtitle="🌸 Exerciseur 🌸">
+  <header class="header">
+    <img src="logo-club.png" class="logo" alt="Logo club">
+    <h1>🎡 Roue des Assauts</h1>
+  </header>
 
-<div id="bannerContainer"></div>
+  <main class="card">
 
-<div class="main-wrapper">
-  <div class="card-kawaii">
-
-    <!-- =========================
-        Techniques de taï-jitsu
-         ========================= -->
-
-<div class="card-kawaii wheel-card">
-  <h2 class="module-title">🎡 Roue des Assauts</h2>
-
-  <div class="wheel-wrapper">
-    <canvas id="wheel" width="320" height="320"></canvas>
-    <div class="wheel-pointer">▲</div>
-  </div>
-
-  <div class="controls-row">
-    <button id="spinBtn" class="btn-kawaii start">Faire tourner 🎯</button>
-    <span id="soundToggle" class="beep-icon">🔊</span>
-  </div>
-
-  <details>
-    <summary>⚙️ Filtres</summary>
-    <div class="inner">
-      <label><input type="checkbox" class="filter" value="Arme" checked> Armes</label><br>
-      <label><input type="checkbox" class="filter" value="Atemi" checked> Atemi</label><br>
-      <label><input type="checkbox" class="filter" value="Saisie" checked> Saisies</label><br>
-      <label><input type="checkbox" class="filter" value="Encerclement" checked> Encerclements</label><br>
+    <div class="wheel-wrapper">
+      <canvas id="wheel" width="320" height="320"></canvas>
+      <div class="wheel-pointer">▲</div>
     </div>
-  </details>
 
-  <div id="assautResult" class="result-display">
-    Appuie sur la roue 🎡
-  </div>
+    <div class="controls">
+      <button id="spinBtn">🎯 Lancer la roue</button>
+      <button id="soundBtn">🔊 Son</button>
+      <button id="voiceBtn">🗣️ Voix</button>
+    </div>
 
-  <!-- Logo club discret -->
-  <img src="logo-club.png" class="club-logo" alt="Logo club">
-</div>
-</div>
- <script>
-const techniques = {
-  1: { Atemi: "Uraken uchi", Clé: "Kote gaeshi", Projection: "O soto gari" },
-  2: { Atemi: "Mae hiza geri", Clé: "Waki gatame", Projection: "Taï otoshi" },
-  3: { Atemi: "Yoko empi", Clé: "Juji ude gatame", Projection: "Ippon seoi nage" },
-  4: { Atemi: "Chudan mae geri", Clé: "Yuki shigae", Projection: "Waki otoshi" },
-  5: { Atemi: "Jodan shuto uchi", Clé: "Hiji dori ura", Projection: "Uki waza" },
-  6: { Atemi: "Chudan mawashi geri", Clé: "Shiho nage", Projection: "Haraï goshi" },
-  7: { Atemi: "Chudan kizami tsuki", Clé: "Tembin", Projection: "Ushiro goshi" },
-  8: { Atemi: "Yoko fumikomi", Clé: "Hashi mawashi", Projection: "Kata hizaguruma" }
-};
+    <details class="filters">
+      <summary>⚙️ Filtres d’assauts</summary>
+      <label><input type="checkbox" value="Saisie" checked> Saisies</label>
+      <label><input type="checkbox" value="Encerclement" checked> Encerclements</label>
+      <label><input type="checkbox" value="Atemi" checked> Atemi</label>
+      <label><input type="checkbox" value="Arme" checked> Armes</label>
+    </details>
 
-let assauts = [];
-let lastResults = [];
-let soundOn = true;
+    <div id="result" class="result">
+      Appuie sur 🎯 pour tirer un assaut
+    </div>
 
-const canvas = document.getElementById("wheel");
-const ctx = canvas.getContext("2d");
-const spinBtn = document.getElementById("spinBtn");
-const resultBox = document.getElementById("assautResult");
-const soundToggle = document.getElementById("soundToggle");
+  </main>
 
-fetch("assauts.json").then(r => r.json()).then(data => {
-  assauts = data;
-  drawWheel(assauts);
-});
+  <footer class="footer">
+    Tai-Jitsu – Entraînement ludique 🥋
+  </footer>
 
-function getFilters() {
-  return [...document.querySelectorAll(".filter:checked")].map(cb => cb.value);
-}
+  <audio id="spinSound" src="spin.mp3" preload="auto"></audio>
 
-function pickRandom(filtered) {
-  let pick;
-  let tries = 0;
-  do {
-    pick = filtered[Math.floor(Math.random() * filtered.length)];
-    tries++;
-  } while (lastResults.includes(pick.nom) && tries < 10);
-
-  lastResults.push(pick.nom);
-  if (lastResults.length > 5) lastResults.shift(); // mémoire 5 derniers
-  return pick;
-}
-
-function spin() {
-  const filters = getFilters();
-  const filtered = assauts.filter(a => filters.includes(a.type_attaque));
-  if (!filtered.length) {
-    resultBox.textContent = "Aucun assaut disponible 😅";
-    return;
-  }
-
-  const assaut = pickRandom(filtered);
-  const techNum = Math.ceil(Math.random() * 8);
-  const types = ["Atemi", "Clé", "Projection"];
-  const type = types[Math.floor(Math.random() * 3)];
-  const techName = techniques[techNum][type];
-
-  const text = `${assaut.type_attaque} – ${assaut.nom} ➜ Technique ${techNum} / ${type} : ${techName}`;
-  resultBox.innerHTML = `
-    <div>${assaut.type_attaque} – ${assaut.nom}</div>
-    <div>⬇️</div>
-    <div>Technique ${techNum} – ${type}</div>
-    <div>${techName}</div>
-  `;
-
-  if (soundOn) speak(text);
-  animateWheel();
-}
-
-function speak(text) {
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "fr-FR";
-  speechSynthesis.speak(u);
-}
-
-function animateWheel() {
-  canvas.style.transition = "transform 2s cubic-bezier(.17,.67,.2,1)";
-  canvas.style.transform = `rotate(${720 + Math.random()*360}deg)`;
-  setTimeout(() => canvas.style.transition = "", 2000);
-}
-
-function drawWheel(data) {
-  const colors = ["#ff4d4d","#ff9f1c","#2ec4b6","#6a4c93","#ff006e","#00bbf9"];
-  const slice = (Math.PI * 2) / data.length;
-
-  data.forEach((a, i) => {
-    ctx.beginPath();
-    ctx.moveTo(160,160);
-    ctx.arc(160,160,160,i*slice,(i+1)*slice);
-    ctx.fillStyle = colors[i % colors.length];
-    ctx.fill();
-  });
-}
-
-spinBtn.addEventListener("click", spin);
-
-soundToggle.addEventListener("click", () => {
-  soundOn = !soundOn;
-  soundToggle.textContent = soundOn ? "🔊" : "🔇";
-});
-</script>
-
-
+  <script src="app.js"></script>
+</body>
+</html>
