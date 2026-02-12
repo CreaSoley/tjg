@@ -62,7 +62,9 @@ function spin() {
   if (!assauts.length) return;
 
   // 1️⃣ Tirage de l’assaut
-  const assaut = assauts[Math.floor(Math.random() * assauts.length)];
+  const assautObj = assauts[Math.floor(Math.random() * assauts.length)];
+  const assaut = assautObj.label || assautObj.nom || assautObj.name || assautObj;
+
   const assautText = `Assaut : ${assaut}`;
 
   resultBox.innerHTML = `<strong>${assautText}</strong>`;
@@ -86,8 +88,13 @@ function spin() {
     const spins = 6 * 360;
     const finalRotation = spins + targetAngle;
 
-    wheel.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)";
-    wheel.style.transform = `rotate(${finalRotation}deg)`;
+    wheel.style.transition = "none";
+  wheel.style.transform = "rotate(0deg)";
+  wheel.offsetHeight; // 👈 force le navigateur à recalculer
+
+  wheel.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)";
+  wheel.style.transform = `rotate(${finalRotation}deg)`;
+
 
     if (soundOn) spinSound.play();
 
