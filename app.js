@@ -171,10 +171,11 @@ function spin() {
     }, 1400);
 
     if (voiceOn) {
-      speakSequence([
-        `Assaut ${assaut}`,
-        `Technique de base numéro ${num} par ${type} : ${phoneticTech}`
-      ], 1600);
+     speakSequence([
+  assaut,
+  `Technique de base numéro ${num} par ${type} : ${phoneticTech}`
+], 1600);
+
     }
 
   }, 6000);
