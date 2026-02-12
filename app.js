@@ -120,7 +120,7 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
-spinBtn.onclick = spin;
+spinBtn.addEventListener("click", spin);
 
 soundBtn.onclick = () => {
   soundOn = !soundOn;
