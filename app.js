@@ -26,20 +26,32 @@ fetch("assauts.json")
   .then(r => r.json())
   .then(data => {
     assauts = data;
-    drawWheel(assauts);
+    drawWheel();
   });
 
-function drawWheel(data) {
-  const colors = ["#ff2a2a","#ffb703","#00f5d4","#8338ec","#ff006e","#3a86ff"];
-  const slice = (Math.PI * 2) / data.length;
+function drawWheel() {
+  const colors = ["#ff2a2a","#ffb703","#00f5d4","#8338ec","#ff006e","#3a86ff","#80ed99","#ffd166"];
+  const slice = (Math.PI * 2) / 8;
 
-  data.forEach((a, i) => {
+  ctx.clearRect(0,0,320,320);
+
+  for (let i = 0; i < 8; i++) {
     ctx.beginPath();
     ctx.moveTo(160,160);
     ctx.arc(160,160,160,i*slice,(i+1)*slice);
-    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillStyle = colors[i];
     ctx.fill();
-  });
+
+    // Numéro
+    ctx.save();
+    ctx.translate(160,160);
+    ctx.rotate(i * slice + slice / 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#000";
+    ctx.font = "bold 28px Fredoka";
+    ctx.fillText(i + 1, 140, 10);
+    ctx.restore();
+  }
 }
 
 function getFilters() {
@@ -47,47 +59,63 @@ function getFilters() {
 }
 
 function spin() {
-  const filters = getFilters();
-  const pool = assauts.filter(a => filters.includes(a.type_attaque));
+  if (!assauts.length) return;
 
-  if (!pool.length) {
-    resultBox.textContent = "Aucun assaut sélectionné 😅";
-    return;
-  }
+  // 1️⃣ Tirage de l’assaut
+  const assaut = assauts[Math.floor(Math.random() * assauts.length)];
+  const assautText = `Assaut : ${assaut}`;
 
-  let pick;
-  let tries = 0;
-  do {
-    pick = pool[Math.floor(Math.random() * pool.length)];
-    tries++;
-  } while (history.includes(pick.nom) && tries < 10);
+  resultBox.innerHTML = `<strong>${assautText}</strong>`;
+  if (voiceOn) speak(assautText);
 
-  history.push(pick.nom);
-  if (history.length > 5) history.shift();
+  // 2️⃣ Petite pause avant la roue
+  setTimeout(() => {
 
-  const num = Math.ceil(Math.random() * 8);
-  const types = ["Atemi","Clé","Projection"];
-  const type = types[Math.floor(Math.random() * 3)];
-  const tech = techniques[num][type];
+    // Tirage technique de base (1 à 8)
+    const num = Math.ceil(Math.random() * 8);
+    const types = ["Atemi","Clé","Projection"];
+    const type = types[Math.floor(Math.random() * 3)];
+    const tech = techniques[num][type];
 
-  resultBox.innerHTML = `
-    <strong>${pick.type_attaque} – ${pick.nom}</strong><br>
-    ⬇️<br>
-    Technique ${num} – ${type}<br>
-    ${tech}
-  `;
+    // Préparation du son
+    spinSound.currentTime = 0;
 
-  if (soundOn) spinSound.play();
-  if (voiceOn) speak(`${pick.type_attaque} ${pick.nom}. Technique ${num} ${type}. ${tech}`);
+    // Calcul rotation
+    const segmentAngle = 360 / 8;
+    const targetAngle = 360 - (num - 1) * segmentAngle - segmentAngle / 2;
+    const spins = 6 * 360;
+    const finalRotation = spins + targetAngle;
 
-  wheel.style.transition = "transform 2s cubic-bezier(.2,.8,.2,1)";
-  wheel.style.transform = `rotate(${720 + Math.random()*360}deg)`;
-  setTimeout(() => wheel.style.transition = "", 2000);
+    wheel.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)";
+    wheel.style.transform = `rotate(${finalRotation}deg)`;
+
+    if (soundOn) spinSound.play();
+
+    // 3️⃣ Résultat APRÈS l'arrêt complet
+    setTimeout(() => {
+      const text = `Technique de base ${num} par ${type} : ${tech}`;
+
+      resultBox.innerHTML += `
+        <hr>
+        <strong>Technique de base ${num}</strong><br>
+        ➜ ${type}<br>
+        ${tech}
+      `;
+
+      if (voiceOn) speak(text);
+
+      history.push({ assaut, num, type, tech });
+
+    }, 6000);
+
+  }, 1200);
 }
 
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "fr-FR";
+  u.rate = 0.95;
+  u.pitch = 1.05;
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
