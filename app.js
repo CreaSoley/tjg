@@ -89,84 +89,83 @@ function getFilters() {
 
 // Lancer la roue
 function spin() {
-  if (!assauts.length) return;
-
-  const activeFilters = getFilters();
-  let filteredAssauts = assauts;
-
-  if (activeFilters.length) {
-    filteredAssauts = assauts.filter(a => a.categories?.some(cat => activeFilters.includes(cat)));
-  }
+  // Filtrer les assauts selon les cases cochées
+  const selectedCategories = getFilters(); // ["Saisie", "Atemi", ...]
+  const filteredAssauts = assauts.filter(a =>
+    a.categories.some(cat => selectedCategories.includes(cat))
+  );
 
   if (!filteredAssauts.length) {
-    alert("Aucun assaut correspondant aux filtres !");
+    resultBox.innerHTML = "❌ Aucun assaut correspondant aux filtres !";
     return;
   }
 
-  // Tirage assaut filtré
+  // Tirage aléatoire de l'assaut
   const assautObj = filteredAssauts[Math.floor(Math.random() * filteredAssauts.length)];
-  const assaut = assautObj.label || assautObj.nom || assautObj.name || assautObj;
+  const assaut = assautObj.nom;
 
-  // Tirage technique
+  // Tirage aléatoire de la technique
   const num = Math.ceil(Math.random() * 8);
   const types = ["Atemi", "Clé", "Projection"];
   const type = types[Math.floor(Math.random() * 3)];
   const tech = techniques[num][type];
   const phoneticTech = phonetics[tech] || tech;
 
-  // Affichage initial assaut
+  // Réinitialiser le résultat pour animation
   resultBox.innerHTML = `
     <div id="assautReveal" class="assaut-reveal">
       Assaut : ${assaut}
     </div>
-    <div id="techReveal" class="tech-reveal" style="opacity:0;"></div>
   `;
 
-  // Son
-  spinSound.currentTime = 0;
-  if (soundOn) spinSound.play();
-
-  // Calcul rotation
+  // Préparation de la roue
   const segmentAngle = 360 / 8;
-  const pointerAngle = 270;
+  const pointerAngle = 270; // position 12h
   const targetAngle = 360 * 6 + pointerAngle - (num - 0.5) * segmentAngle;
 
-  // Reset animation
   wheel.style.transition = "none";
   wheel.style.transform = "rotate(0deg)";
-  wheel.offsetHeight; // force repaint
+  wheel.offsetHeight; // forcer recalcul
 
-  wheel.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)";
+  wheel.style.transition = `transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)`;
   wheel.style.transform = `rotate(${targetAngle}deg)`;
 
-  // Après rotation
+  // Jouer le son si activé
+  if (soundOn) {
+    spinSound.currentTime = 0;
+    spinSound.play();
+  }
+
+  // Après la fin de la rotation
   setTimeout(() => {
     const reveal = document.getElementById("assautReveal");
     reveal.classList.add("open");
 
-    // Lecture séquence voix
-    if (voiceOn) speakSequence([
-      `Assaut : ${assaut}`,
-      `Technique de base ${num} par ${type} : ${phoneticTech}`
-    ], 800);
+    // Lecture de l'assaut
+    if (voiceOn) {
+      speakSequence([`Assaut : ${assaut}`], 800);
+    }
 
-    // Révélation technique après pause
+    // Petite pause avant révélation technique
     setTimeout(() => {
-      const techReveal = document.getElementById("techReveal");
-      techReveal.innerHTML = `
+      resultBox.innerHTML += `
         <hr>
         <strong>Technique de base ${num}</strong><br>
         ➜ ${type}<br>
         ${tech}
       `;
-      techReveal.style.transition = "opacity 0.8s";
-      techReveal.style.opacity = 1;
 
+      // Lecture de la technique en phonétique
+      if (voiceOn) {
+        speakSequence([`Technique de base ${num} par ${type} : ${phoneticTech}`], 600);
+      }
+
+      // Ajouter au historique
       history.push({ assaut, num, type, tech });
 
     }, 1200);
 
-  }, 6000);
+  }, 6000); // durée du son / rotation
 }
 
 // Voix
