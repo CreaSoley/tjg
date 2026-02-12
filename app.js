@@ -59,18 +59,19 @@ function drawWheel() {
   const colors = ["#ff2a2a","#ffb703","#00f5d4","#8338ec","#ff006e","#3a86ff","#80ed99","#ffd166"];
   const slice = (Math.PI * 2) / 8;
 
-  ctx.clearRect(0,0,320,320);
+  // Dessin du canvas
+  ctx.clearRect(0, 0, wheel.width, wheel.height);
 
   for (let i = 0; i < 8; i++) {
     ctx.beginPath();
-    ctx.moveTo(160,160);
-    ctx.arc(160,160,160,i*slice,(i+1)*slice);
+    ctx.moveTo(160, 160);
+    ctx.arc(160, 160, 160, i * slice, (i + 1) * slice);
     ctx.fillStyle = colors[i];
     ctx.fill();
 
-    // Numéro
+    // Numéro du segment
     ctx.save();
-    ctx.translate(160,160);
+    ctx.translate(160, 160);
     ctx.rotate(i * slice + slice / 2);
     ctx.textAlign = "right";
     ctx.fillStyle = "#000";
@@ -87,54 +88,73 @@ function getFilters() {
 function spin() {
   if (!assauts.length) return;
 
-  // Tirage assaut (gestion objet ou string)
+  // Tirage assaut
   const assautObj = assauts[Math.floor(Math.random() * assauts.length)];
   const assaut = assautObj.label || assautObj.nom || assautObj.name || assautObj;
 
-  // On prépare l'affichage sans révéler encore
-  resultBox.innerHTML = `
-    <div id="assautReveal" class="assaut-reveal">
-      Assaut : ${assaut}
-    </div>
-  `;
-
-  // Préparation technique de base
+  // Tirage technique de base
   const num = Math.ceil(Math.random() * 8);
   const types = ["Atemi","Clé","Projection"];
   const type = types[Math.floor(Math.random() * 3)];
   const tech = techniques[num][type];
   const phoneticTech = phonetics[tech] || tech;
 
+  // Affichage assaut en "masqué" pour animation
+  resultBox.innerHTML = `
+    <div id="assautReveal" class="assaut-reveal">Assaut : ${assaut}</div>
+    <div id="techReveal" class="tech-reveal" style="opacity:0;transition:opacity 1s;"></div>
+  `;
+
   // Préparation son
   spinSound.currentTime = 0;
+  if (soundOn) spinSound.play();
 
+  // Calcul rotation
   const segmentAngle = 360 / 8;
-  const pointerAngle = 270; // 12h en degrés (repère CSS)
-  const targetAngle =
-    360 * 6 +                      // 6 tours complets
-    pointerAngle -                  // position du pointeur
-    (num - 0.5) * segmentAngle;    // centre du segment
+  const pointerAngle = 270; // 12h
+  const targetAngle = 360 * 6 + pointerAngle - (num - 0.5) * segmentAngle;
 
-  // Reset animation pour éviter les bugs
+  // Reset rotation
   wheel.style.transition = "none";
   wheel.style.transform = "rotate(0deg)";
-  wheel.offsetHeight;
+  wheel.offsetHeight; // force reflow
 
+  // Lancer rotation
   wheel.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)";
   wheel.style.transform = `rotate(${targetAngle}deg)`;
 
-  if (soundOn) spinSound.play();
-
-  // Après arrêt de la roue
+  // Après fin rotation (durée du son = 6s)
   setTimeout(() => {
-
-    // 🎭 Révélation assaut avec animation
+    // 🎭 Révélation assaut
     const reveal = document.getElementById("assautReveal");
     reveal.classList.add("open");
 
-    // Lecture séquence voix
-    if (voiceOn) {
-      speakSe
+    // Voix assaut
+    if (voiceOn) speak(`Assaut : ${assaut}`);
+
+    // Petite pause dramatique
+    setTimeout(() => {
+      const techReveal = document.getElementById("techReveal");
+      techReveal.innerHTML = `
+        <hr>
+        <strong>Technique de base ${num}</strong><br>
+        ➜ ${type}<br>
+        ${tech}
+      `;
+      techReveal.style.opacity = 1;
+
+      // Voix technique en phonétique
+      if (voiceOn) speakSequence([
+        `Technique de base ${num} par ${type} : ${phoneticTech}`
+      ], 600);
+
+      // Historique
+      history.push({ assaut, num, type, tech });
+
+    }, 1000);
+
+  }, 6000);
+}
 
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
