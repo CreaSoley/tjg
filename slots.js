@@ -1,31 +1,6 @@
-const deplacements = [
-  "Ayumi ashi",
-  "Hiki ashi",
-  "Tsugi ashi",
-  "Yori ashi"
-];
-
-const positions = [
-  "Zenkutsu dashi",
-  "Kokutsu dashi",
-  "Neko dashi",
-  "Fudo dashi",
-  "Kiba dashi"
-];
-
-const techniques = [
-  "Gyaku tsuki",
-  "Kizami tsuki",
-  "Uraken uchi",
-  "Shuto uchi",
-  "Teisho uchi",
-  "Yoko geri",
-  "Mawashi geri",
-  "Gedan barai",
-  "Uchi uke",
-  "Jodan age uke",
-  "Soto uke"
-];
+const deplacements = ["Ayumi ashi", "Hiki ashi", "Tsugi ashi", "Yori ashi"];
+const positions = ["Zenkutsu dashi", "Kokutsu dashi", "Neko dashi", "Fudo dashi", "Kiba dashi"];
+const techniques = ["Gyaku tsuki", "Kizami tsuki", "Uraken uchi", "Shuto uchi", "Teisho uchi", "Yoko geri", "Mawashi geri", "Gedan barai", "Uchi uke", "Jodan age uke", "Soto uke"];
 
 const slot1 = document.getElementById("slot1");
 const slot2 = document.getElementById("slot2");
@@ -36,43 +11,58 @@ const resultDiv = document.getElementById("result");
 
 let voiceEnabled = true;
 
+// Fonction pour choisir un élément aléatoire
 function randomFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// spinSlot améliorée pour cascade
-function spinSlot(slot, values, duration) {
-  slot.classList.add("spin");
-
+// Fonction d’animation "spin avec easing"
+function spinSlotSmooth(slot, values, totalTime) {
   return new Promise(resolve => {
-    const interval = setInterval(() => {
-      slot.textContent = randomFrom(values);
-    }, 80);
+    let startTime = null;
+    const spinSpeed = 100; // ms entre changements au début
 
-    setTimeout(() => {
-      clearInterval(interval);
-      const finalValue = randomFrom(values);
-      slot.textContent = finalValue;
-      slot.classList.remove("spin");
-      resolve(finalValue);
-    }, duration);
+    function animate(time) {
+      if (!startTime) startTime = time;
+      const elapsed = time - startTime;
+
+      // Ease out: plus on avance, plus le temps entre changements augmente
+      const progress = Math.min(elapsed / totalTime, 1);
+      const ease = Math.pow(1 - progress, 2); // carré pour ralentir doucement
+      const interval = 50 + 200 * ease; // intervalle entre changements
+
+      if (!slot.lastUpdate || time - slot.lastUpdate >= interval) {
+        slot.textContent = randomFrom(values);
+        slot.lastUpdate = time;
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Valeur finale
+        const finalValue = randomFrom(values);
+        slot.textContent = finalValue;
+        resolve(finalValue);
+      }
+    }
+
+    requestAnimationFrame(animate);
   });
 }
 
+// Bouton spin
 spinBtn.addEventListener("click", async () => {
   resultDiv.textContent = "🎰 Tirage en cours...";
 
-  // Durées en cascade
-  const duration1 = 1200; // rouleau 1
-  const duration2 = 1800; // rouleau 2, plus long
-  const duration3 = 2500; // rouleau 3, encore plus long
+  // Durées en cascade pour effet machine à sous
+  const duration1 = 1200; // premier rouleau
+  const duration2 = 1800; // deuxième
+  const duration3 = 2500; // troisième
 
-  // Lancer tous les rouleaux en parallèle mais avec durées différentes
-  const dPromise = spinSlot(slot1, deplacements, duration1);
-  const pPromise = spinSlot(slot2, positions, duration2);
-  const tPromise = spinSlot(slot3, techniques, duration3);
+  const dPromise = spinSlotSmooth(slot1, deplacements, duration1);
+  const pPromise = spinSlotSmooth(slot2, positions, duration2);
+  const tPromise = spinSlotSmooth(slot3, techniques, duration3);
 
-  // Attendre les trois
   const d = await dPromise;
   const p = await pPromise;
   const t = await tPromise;
@@ -85,11 +75,13 @@ spinBtn.addEventListener("click", async () => {
   }
 });
 
+// Bouton voix
 voiceBtn.addEventListener("click", () => {
   voiceEnabled = !voiceEnabled;
   voiceBtn.textContent = voiceEnabled ? "🗣️ Voix" : "🔇 Voix";
 });
 
+// Synthèse vocale
 function speakResult(deplacement, position, technique) {
   if (!("speechSynthesis" in window)) return;
 
