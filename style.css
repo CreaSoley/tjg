@@ -144,3 +144,37 @@ button:active {
   max-height: 80px;
   opacity: 1;
 }
+.slots {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 15px 0;
+  align-items: center;
+}
+
+.slot {
+  width: 100%;
+  max-width: 260px;
+  height: 60px;
+  background: linear-gradient(180deg, #000, #111);
+  border: 3px solid var(--red);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 10px rgba(255,0,0,0.2), 4px 4px 0 #000;
+  overflow: hidden;
+  position: relative;
+}
+
+.slot.spin {
+  animation: slotSpin 0.15s linear infinite;
+}
+
+@keyframes slotSpin {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
