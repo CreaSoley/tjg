@@ -124,37 +124,36 @@ function spin() {
   wheel.style.transform = `rotate(${targetAngle}deg)`;
 
   // Après fin rotation (durée du son = 6s)
+// Après fin rotation
+setTimeout(() => {
+  const reveal = document.getElementById("assautReveal");
+  reveal.classList.add("open");
+
+  // Préparer texte à lire
+  const sequence = [
+    `Assaut : ${assaut}`,
+    `Technique de base ${num} par ${type} : ${phoneticTech}`
+  ];
+
+  // Affichage technique après une pause
   setTimeout(() => {
-    // 🎭 Révélation assaut
-    const reveal = document.getElementById("assautReveal");
-    reveal.classList.add("open");
+    const techReveal = document.getElementById("techReveal");
+    techReveal.innerHTML = `
+      <hr>
+      <strong>Technique de base ${num}</strong><br>
+      ➜ ${type}<br>
+      ${tech}
+    `;
+    techReveal.style.opacity = 1;
+  }, 1000);
 
-    // Voix assaut
-    if (voiceOn) speak(`Assaut : ${assaut}`);
+  // Lecture vocale complète en séquence
+  if (voiceOn) speakSequence(sequence, 800);
 
-    // Petite pause dramatique
-    setTimeout(() => {
-      const techReveal = document.getElementById("techReveal");
-      techReveal.innerHTML = `
-        <hr>
-        <strong>Technique de base ${num}</strong><br>
-        ➜ ${type}<br>
-        ${tech}
-      `;
-      techReveal.style.opacity = 1;
+  // Historique
+  history.push({ assaut, num, type, tech });
 
-      // Voix technique en phonétique
-      if (voiceOn) speakSequence([
-        `Technique de base ${num} par ${type} : ${phoneticTech}`
-      ], 600);
-
-      // Historique
-      history.push({ assaut, num, type, tech });
-
-    }, 1000);
-
-  }, 6000);
-}
+}, 6000);
 
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
