@@ -203,3 +203,30 @@ button:active {
   transform: translateY(3px);
   box-shadow: none;
 }
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  position: relative; /* nécessaire pour positionner le bouton */
+}
+
+.menu-btn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #ff2a2a, #8b0000);
+  border: 2px solid black;
+  border-radius: 999px;
+  padding: 6px 12px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 black;
+}
+
+.menu-btn:active {
+  transform: translateY(-50%) translateY(3px);
+  box-shadow: none;
+}
