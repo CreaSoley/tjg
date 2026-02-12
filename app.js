@@ -57,6 +57,17 @@ fetch("assauts.json")
   });
 
 // Dessine la roue
+const wheelSegments = [
+  { label: "Atemi", emoji: "🥊" },
+  { label: "Étranglement", emoji: "🫱" },
+  { label: "Encerclement", emoji: "🔒" },
+  { label: "Saisie", emoji: "✊" },
+  { label: "Atemi", emoji: "🥊" },
+  { label: "Étranglement", emoji: "🫱" },
+  { label: "Encerclement", emoji: "🔒" },
+  { label: "Saisie", emoji: "✊" }
+];
+
 function drawWheel() {
   const colors = ["#ff2a2a","#ffb703","#00f5d4","#8338ec","#ff006e","#3a86ff","#80ed99","#ffd166"];
   const slice = (2 * Math.PI) / 8;
@@ -70,14 +81,13 @@ function drawWheel() {
     ctx.fillStyle = colors[i];
     ctx.fill();
 
-    // Numéro du segment
     ctx.save();
     ctx.translate(160, 160);
     ctx.rotate(i * slice + slice / 2);
     ctx.textAlign = "right";
     ctx.fillStyle = "#000";
-    ctx.font = "bold 28px Fredoka";
-    ctx.fillText(i + 1, 140, 10);
+    ctx.font = "bold 20px Fredoka";
+    ctx.fillText(`${wheelSegments[i].emoji} ${wheelSegments[i].label}`, 145, 10);
     ctx.restore();
   }
 }
@@ -89,102 +99,103 @@ function getFilters() {
 
 // Lancer la roue
 function spin() {
-  // Filtrer les assauts selon les cases cochées
-  const selectedCategories = getFilters(); // ["Saisie", "Atemi", ...]
+  if (!assauts.length) return;
+
+  // Tirage catégorie depuis la roue
+  const num = Math.ceil(Math.random() * 8);
+  const category = wheelSegments[num - 1].label;
+
+  // Filtrer assauts selon catégorie
   const filteredAssauts = assauts.filter(a =>
-    a.categories.some(cat => selectedCategories.includes(cat))
+    a.categories.includes(category)
   );
 
   if (!filteredAssauts.length) {
-    resultBox.innerHTML = "❌ Aucun assaut correspondant aux filtres !";
+    resultBox.innerHTML = "❌ Aucun assaut pour cette catégorie";
     return;
   }
 
-  // Tirage aléatoire de l'assaut
   const assautObj = filteredAssauts[Math.floor(Math.random() * filteredAssauts.length)];
   const assaut = assautObj.nom;
 
-  // Tirage aléatoire de la technique
-  const num = Math.ceil(Math.random() * 8);
+  // Tirage technique
   const types = ["Atemi", "Clé", "Projection"];
   const type = types[Math.floor(Math.random() * 3)];
   const tech = techniques[num][type];
   const phoneticTech = phonetics[tech] || tech;
 
-  // Réinitialiser le résultat pour animation
   resultBox.innerHTML = `
     <div id="assautReveal" class="assaut-reveal">
-      Assaut : ${assaut}
+      ${wheelSegments[num - 1].emoji} Catégorie : ${category}
     </div>
+    <div id="techReveal" class="tech-reveal" style="opacity:0;"></div>
   `;
 
-  // Préparation de la roue
+  // Animation roue
   const segmentAngle = 360 / 8;
-  const pointerAngle = 270; // position 12h
+  const pointerAngle = 270;
   const targetAngle = 360 * 6 + pointerAngle - (num - 0.5) * segmentAngle;
 
   wheel.style.transition = "none";
   wheel.style.transform = "rotate(0deg)";
-  wheel.offsetHeight; // forcer recalcul
+  wheel.offsetHeight;
 
-  wheel.style.transition = `transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)`;
+  wheel.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.2, 1)";
   wheel.style.transform = `rotate(${targetAngle}deg)`;
 
-  // Jouer le son si activé
   if (soundOn) {
     spinSound.currentTime = 0;
     spinSound.play();
   }
 
-  // Après la fin de la rotation
   setTimeout(() => {
-    const reveal = document.getElementById("assautReveal");
-    reveal.classList.add("open");
+    document.getElementById("assautReveal").classList.add("open");
 
-    // Lecture de l'assaut
-    if (voiceOn) {
-      speakSequence([`Assaut : ${assaut}`], 800);
-    }
-
-    // Petite pause avant révélation technique
     setTimeout(() => {
-      resultBox.innerHTML += `
+      const techReveal = document.getElementById("techReveal");
+      techReveal.innerHTML = `
         <hr>
-        <strong>Technique de base ${num}</strong><br>
+        <strong>${category}</strong><br>
         ➜ ${type}<br>
         ${tech}
       `;
-
-      // Lecture de la technique en phonétique
-      if (voiceOn) {
-        speakSequence([`Technique de base ${num} par ${type} : ${phoneticTech}`], 600);
-      }
-
-      // Ajouter au historique
-      history.push({ assaut, num, type, tech });
-
+      techReveal.style.opacity = 1;
     }, 1200);
 
-  }, 6000); // durée du son / rotation
+    if (voiceOn) {
+      speakSequence([
+        `Catégorie : ${category}`,
+        `Assaut : ${assaut}`,
+        `Technique ${type} : ${phoneticTech}`
+      ], 1500);
+    }
+
+  }, 6000);
 }
 
 // Voix
-function speakSequence(texts, delay = 0) {
+function speakSequence(texts, delay = 1500) {
   if (!voiceOn) return;
+
   let i = 0;
+  speechSynthesis.cancel();
 
   function next() {
     if (i >= texts.length) return;
+
     const u = new SpeechSynthesisUtterance(texts[i]);
     u.lang = "fr-FR";
-    u.rate = 0.95;
-    u.pitch = 1.05;
-    u.onend = () => setTimeout(next, delay);
+    u.rate = 0.8;      // 🔥 plus lent
+    u.pitch = 1.0;
+
+    u.onend = () => {
+      setTimeout(next, delay); // 🔥 vraie latence entre les phrases
+    };
+
     speechSynthesis.speak(u);
     i++;
   }
 
-  speechSynthesis.cancel();
   next();
 }
 
