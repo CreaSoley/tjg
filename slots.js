@@ -40,6 +40,7 @@ function randomFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// spinSlot améliorée pour cascade
 function spinSlot(slot, values, duration) {
   slot.classList.add("spin");
 
@@ -60,10 +61,21 @@ function spinSlot(slot, values, duration) {
 
 spinBtn.addEventListener("click", async () => {
   resultDiv.textContent = "🎰 Tirage en cours...";
-  
-  const d = await spinSlot(slot1, deplacements, 1200);
-  const p = await spinSlot(slot2, positions, 1600);
-  const t = await spinSlot(slot3, techniques, 2000);
+
+  // Durées en cascade
+  const duration1 = 1200; // rouleau 1
+  const duration2 = 1800; // rouleau 2, plus long
+  const duration3 = 2500; // rouleau 3, encore plus long
+
+  // Lancer tous les rouleaux en parallèle mais avec durées différentes
+  const dPromise = spinSlot(slot1, deplacements, duration1);
+  const pPromise = spinSlot(slot2, positions, duration2);
+  const tPromise = spinSlot(slot3, techniques, duration3);
+
+  // Attendre les trois
+  const d = await dPromise;
+  const p = await pPromise;
+  const t = await tPromise;
 
   const finalText = `${d} – ${p} – ${t}`;
   resultDiv.textContent = finalText;
