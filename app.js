@@ -85,9 +85,20 @@ function drawWheel() {
     ctx.translate(160, 160);
     ctx.rotate(i * slice + slice / 2);
     ctx.textAlign = "right";
+
+    // Texte catégorie
+    ctx.font = "bold 14px Fredoka";
     ctx.fillStyle = "#000";
-    ctx.font = "bold 20px Fredoka";
-    ctx.fillText(`${wheelSegments[i].emoji} ${wheelSegments[i].label}`, 145, 10);
+    ctx.fillText(wheelSegments[i].label, 145, -6);
+
+    // Emoji avec contour blanc pour lisibilité
+    ctx.font = "22px serif";
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#fff";
+    ctx.strokeText(wheelSegments[i].emoji, 135, 18);
+    ctx.fillStyle = "#000";
+    ctx.fillText(wheelSegments[i].emoji, 135, 18);
+
     ctx.restore();
   }
 }
@@ -101,11 +112,10 @@ function getFilters() {
 function spin() {
   if (!assauts.length) return;
 
-  // Tirage catégorie depuis la roue
   const num = Math.ceil(Math.random() * 8);
   const category = wheelSegments[num - 1].label;
+  const emoji = wheelSegments[num - 1].emoji;
 
-  // Filtrer assauts selon catégorie
   const filteredAssauts = assauts.filter(a =>
     a.categories.includes(category)
   );
@@ -118,7 +128,6 @@ function spin() {
   const assautObj = filteredAssauts[Math.floor(Math.random() * filteredAssauts.length)];
   const assaut = assautObj.nom;
 
-  // Tirage technique
   const types = ["Atemi", "Clé", "Projection"];
   const type = types[Math.floor(Math.random() * 3)];
   const tech = techniques[num][type];
@@ -126,12 +135,13 @@ function spin() {
 
   resultBox.innerHTML = `
     <div id="assautReveal" class="assaut-reveal">
-      ${wheelSegments[num - 1].emoji} Catégorie : ${category}
+      ${emoji} ${category}
+      <hr>
+      ${assaut}
     </div>
     <div id="techReveal" class="tech-reveal" style="opacity:0;"></div>
   `;
 
-  // Animation roue
   const segmentAngle = 360 / 8;
   const pointerAngle = 270;
   const targetAngle = 360 * 6 + pointerAngle - (num - 0.5) * segmentAngle;
@@ -154,20 +164,17 @@ function spin() {
     setTimeout(() => {
       const techReveal = document.getElementById("techReveal");
       techReveal.innerHTML = `
-        <hr>
-        <strong>${category}</strong><br>
-        ➜ ${type}<br>
+        <strong>${type} n°${num}</strong><br>
         ${tech}
       `;
       techReveal.style.opacity = 1;
-    }, 1200);
+    }, 1400);
 
     if (voiceOn) {
       speakSequence([
-        `Catégorie : ${category}`,
-        `Assaut : ${assaut}`,
-        `Technique ${type} : ${phoneticTech}`
-      ], 1500);
+        `Assaut ${assaut}`,
+        `Technique de base numéro ${num} par ${type} : ${phoneticTech}`
+      ], 1600);
     }
 
   }, 6000);
