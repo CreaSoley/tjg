@@ -130,3 +130,17 @@ button:active {
   padding: 6px 0;
   box-shadow: 2px 2px 0 #000;
 }
+.assaut-reveal {
+  margin-top: 10px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.6s ease, opacity 0.6s ease;
+  opacity: 0;
+}
+
+.assaut-reveal.open {
+  max-height: 80px;
+  opacity: 1;
+}
