@@ -1,36 +1,66 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Roue Tai-Jitsu</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulateur UV – Examen</title>
+
+<link rel="stylesheet" href="banner.css">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
+
+<style>
+.grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 20px !important;
+  width: 100%;
+}
+</style>
 </head>
-<body>
 
-<header>
-  <img src="logo-club.png" alt="Logo du club" class="logo">
-  <h1>Roue des Assauts</h1>
-</header>
+<body data-subtitle="🌸 Exerciseur 🌸">
 
-<section class="controls">
-  <label><input type="checkbox" checked id="soundToggle"> 🔊 Son</label>
-  <label><input type="checkbox" checked id="speechToggle"> 🗣️ Voix</label>
-  <label><input type="checkbox" id="excludeArme"> Exclure Armes</label>
-  <label><input type="checkbox" id="excludeAtemi"> Exclure Atemi</label>
-</section>
+<div id="bannerContainer"></div>
 
-<section class="wheel-container">
-  <canvas id="wheel" width="320" height="320"></canvas>
-  <button id="spinBtn">🎯 Tourner la roue</button>
-</section>
+<div class="main-wrapper">
+  <div class="card-kawaii">
 
-<section class="result">
-  <h2>Résultat</h2>
-  <div id="resultText">Appuie sur la roue 👊</div>
-</section>
+    <!-- =========================
+        Techniques de taï-jitsu
+         ========================= -->
 
-<audio id="spinSound" src="spin.mp3" preload="auto"></audio>
+<div class="card-kawaii wheel-card">
+  <h2 class="module-title">🎡 Roue des Assauts</h2>
 
-<script src="app.js"></script>
-</body>
-</html>
+  <div class="wheel-wrapper">
+    <canvas id="wheel" width="320" height="320"></canvas>
+    <div class="wheel-pointer">▲</div>
+  </div>
+
+  <div class="controls-row">
+    <button id="spinBtn" class="btn-kawaii start">Faire tourner 🎯</button>
+    <span id="soundToggle" class="beep-icon">🔊</span>
+  </div>
+
+  <details>
+    <summary>⚙️ Filtres</summary>
+    <div class="inner">
+      <label><input type="checkbox" class="filter" value="Arme" checked> Armes</label><br>
+      <label><input type="checkbox" class="filter" value="Atemi" checked> Atemi</label><br>
+      <label><input type="checkbox" class="filter" value="Saisie" checked> Saisies</label><br>
+      <label><input type="checkbox" class="filter" value="Encerclement" checked> Encerclements</label><br>
+    </div>
+  </details>
+
+  <div id="assautResult" class="result-display">
+    Appuie sur la roue 🎡
+  </div>
+
+  <!-- Logo club discret -->
+  <img src="logo-club.png" class="club-logo" alt="Logo club">
+</div>
+</div>
+ 
+
