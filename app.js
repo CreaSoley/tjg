@@ -35,7 +35,7 @@ const phonetics = {
   "Yuki shigae": "youki chiga-é",
   "Waki otoshi": "waki otochi",
   "Jodan shuto uchi": "djodane chouto outchi",
-  "Hiji dori ura": "hidji dori oura",
+  "Hiji dori ura": "hiji dori oura",
   "Uki waza": "ouki waza",
   "Chudan mawashi geri": "tchoudane mawachi guéri",
   "Shiho nage": "chiho nagué",
